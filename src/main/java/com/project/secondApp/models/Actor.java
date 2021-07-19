@@ -11,6 +11,7 @@ public class Actor {
     private String name;
     private String gender;
 
+
     @ManyToMany(mappedBy = "actors")
     private List<Movie> movies;
 

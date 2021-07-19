@@ -17,9 +17,9 @@ public class Movie {
 
     @ManyToMany
     @JoinTable(
-            name = "cast",
-            joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "actor_id"))
+            name = "MoviesAndActors",
+            joinColumns = @JoinColumn(name = "movie_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "id"))
     private List<Actor> actors;
 
     public Movie() {

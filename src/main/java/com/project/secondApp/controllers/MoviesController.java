@@ -17,19 +17,19 @@ public class MoviesController {
     // LIST MOVIES
     @GetMapping
     public List<Movie> list(){
-        return movieRepository.listMovies();
+        return movieRepository.findAll();
     }
 
     // ADD MOVIE
     @PostMapping
     public Movie create(@RequestBody final Movie movie){
-        return movieRepository.addMovie(movie);
+        return movieRepository.saveAndFlush(movie);
     }
 
     // DELETE MOVIE
-    @RequestMapping(value = "{title}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable String title) {
-        movieRepository.deleteMovie(title);
+    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable Long id) {
+        movieRepository.deleteById(id);
     }
 
     // UPDATE MOVIE

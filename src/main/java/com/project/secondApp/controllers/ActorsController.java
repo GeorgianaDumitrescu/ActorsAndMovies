@@ -17,19 +17,19 @@ public class ActorsController {
     // LIST ACTORS
     @GetMapping
     public List<Actor> list(){
-        return actorRepository.listActors();
+        return actorRepository.findAll();
     }
 
     // ADD ACTOR
     @PostMapping
     public Actor create(@RequestBody final Actor actor){
-        return actorRepository.addActors(actor);
+        return actorRepository.saveAndFlush(actor);
     }
 
     // DELETE ACTOR
-    @RequestMapping(value = "{title}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable String title) {
-        actorRepository.deleteActor(title);
+    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable Long id) {
+        actorRepository.deleteById(id);
     }
 
     // UPDATE ACTOR

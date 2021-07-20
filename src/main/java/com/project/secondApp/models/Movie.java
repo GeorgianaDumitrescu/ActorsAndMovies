@@ -3,7 +3,11 @@ package com.project.secondApp.models;
 import javax.persistence.*;
 import java.util.List;
 
-enum Type{horror, comedy, action}
+enum Type {
+    horror,
+    comedy,
+    action
+}
 
 @Entity(name = "movies")
 public class Movie {
@@ -13,6 +17,8 @@ public class Movie {
     private Integer id;
     private String title;
     private Double rating;
+
+    @Enumerated(EnumType.STRING)
     private Type type;
 
     @ManyToMany

@@ -11,4 +11,7 @@ public interface ActorRepository extends JpaRepository<Actor, Long> {
     void deleteById(Long id);
     Actor getOne(Long id);
     Actor saveAndFlush(Actor existingActor);
+
+    /* https://www.netsurfingzone.com/jpa/how-to-write-custom-method-in-repository-in-spring-data-jpa/ */
+    Actor findByName(String name);
 }

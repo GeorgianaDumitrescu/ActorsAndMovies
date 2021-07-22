@@ -12,4 +12,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     void deleteById(Long id);
     Movie getOne(Long id);
     Movie saveAndFlush(Movie existingSession);
+
+    /* https://www.netsurfingzone.com/jpa/how-to-write-custom-method-in-repository-in-spring-data-jpa/ */
+    Movie findByTitle(String title);
 }

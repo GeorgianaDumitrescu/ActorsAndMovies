@@ -25,9 +25,11 @@ public class ActorsController {
         /* Raw */
         List<Movie> movies = sourceActor.getMovies();
 
-        /* Raw -> User friendly */
-        for (Movie currentMovie : movies) {
-            destinationActor.getMovies().add(currentMovie.getTitle());
+        /* Raw -> User friendly (if there are any movies the actor/actress starred in)*/
+        if (!(movies == null)) {
+            for (Movie currentMovie : movies) {
+                destinationActor.getMovies().add(currentMovie.getTitle());
+            }
         }
 
         return destinationActor;
@@ -59,7 +61,7 @@ public class ActorsController {
             actorRepository.saveAndFlush(actor);
 
         /* Create user friendly version of actor */
-        UserActor actorCopy = getUserFriendlyInfo(oldActor);
+        UserActor actorCopy = getUserFriendlyInfo(actor);
 
         return actorCopy;
     }

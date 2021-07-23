@@ -81,8 +81,12 @@ public class ActorsController {
     public UserActor update(@PathVariable String name, @RequestBody Actor actor) {
 
         Actor existingActor = actorRepository.findByName(name);
-        BeanUtils.copyProperties(actor, existingActor, "actor_id");
-        actorRepository.saveAndFlush(actor);
+
+        /* Keep old id */
+        BeanUtils.copyProperties(actor, existingActor, "id");
+
+        /* Save updated actor with old id */
+        actorRepository.saveAndFlush(existingActor);
 
         /* Create user friendly version of actor */
         UserActor actorCopy = getUserFriendlyInfo(existingActor);

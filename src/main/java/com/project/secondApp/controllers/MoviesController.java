@@ -83,8 +83,11 @@ public class MoviesController {
 
         Movie existingMovie = movieRepository.findByTitle(title);
 
-        BeanUtils.copyProperties(movie, existingMovie, "movie_id");
-        movieRepository.saveAndFlush(movie);
+        /* Keep old id */
+        BeanUtils.copyProperties(movie, existingMovie, "id");
+
+        /* Save updated movie with old id */
+        movieRepository.saveAndFlush(existingMovie);
 
         /* Create user friendly version of movie */
         UserMovie movieCopy = getUserFriendlyInfo(existingMovie);

@@ -63,7 +63,7 @@ public class MoviesController {
             movieRepository.saveAndFlush(movie);
 
         /* Create user friendly version of movie */
-        UserMovie movieCopy = getUserFriendlyInfo(oldMovie);
+        UserMovie movieCopy = getUserFriendlyInfo(movie);
 
         return movieCopy;
     }

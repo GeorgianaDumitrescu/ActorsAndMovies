@@ -1,11 +1,13 @@
 package com.project.secondApp.controllers;
 
 import com.project.secondApp.models.Actor;
-import com.project.secondApp.models.Movie;
-import com.project.secondApp.models.UserActor;
+import com.project.secondApp.models.ActorDto;
+import com.project.secondApp.models.ActorMapping;
 import com.project.secondApp.repositories.ActorRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -15,72 +17,97 @@ import java.util.List;
 @RequestMapping("api/v2/actors")
 public class ActorsController {
 
-    public UserActor getUserFriendlyInfo(Actor sourceActor) {
-        UserActor destinationActor = new UserActor();
-
-        destinationActor.setName(sourceActor.getName());
-        destinationActor.setGender(sourceActor.getGender());
-        destinationActor.setMovies(new ArrayList<>());
-
-        /* Raw */
-        List<Movie> movies = sourceActor.getMovies();
-
-        /* Raw -> User friendly (if there are any movies the actor/actress starred in)*/
-        if (!(movies == null)) {
-            for (Movie currentMovie : movies) {
-                destinationActor.getMovies().add(currentMovie.getTitle());
-            }
-        }
-
-        return destinationActor;
-    }
     @Autowired
     private ActorRepository actorRepository;
+    ActorMapping responseActor = new ActorMapping();
+
+    public ResponseEntity<String> validateActor(Actor actor) {
+        Actor oldActor = actorRepository.findByName(actor.getName());
+
+        if (actor.getName().matches(".*\\d.*")) {
+            /* Actor name has incorrect format (no numbers allowed)*/
+            return new ResponseEntity<>("Actor name contains numbers.", HttpStatus.valueOf(400));
+        }
+
+        if (!(actor.getGender().equals("female") || actor.getGender().equals("male"))){
+            /* Actor gender has incorrect type/format (no spaces allowed) */
+            return new ResponseEntity<>("Actor gender not recognized.", HttpStatus.valueOf(400));
+        }
+
+        if(oldActor != null){
+            /* Actor exists */
+            return new ResponseEntity<>("Actor already exists.", HttpStatus.valueOf(409));
+        }
+
+        /* Validate actor */
+        return new ResponseEntity<>("Added new actor: " + actor.getName(), HttpStatus.OK);
+    }
 
     // LIST ACTORS
     @GetMapping
-    public List<UserActor> list(){
-        List<UserActor> userActors = new ArrayList<UserActor>();
-        List<Actor> movies = actorRepository.findAll();
+    public ResponseEntity<List<ActorDto>> list(){
+        List<ActorDto> actors = new ArrayList<>();
+        List<Actor> actorsList = actorRepository.findAll();
 
-        for(Actor iterator : movies) {
-            UserActor actor = getUserFriendlyInfo(iterator);
-            userActors.add(actor);
+        for(Actor actor : actorsList) {
+            actors.add(responseActor.getMapping(actor));
         }
 
-        return userActors;
+        return new ResponseEntity<>(actors, HttpStatus.OK);
     }
 
     // ADD ACTOR
     @PostMapping
-    public UserActor create(@RequestBody final Actor actor){
-        Actor oldActor = actorRepository.findByName(actor.getName());
+    public ResponseEntity<String> create(@RequestBody final Actor actor){
 
-        /* Add actor only if it does not exist already */
-        if (oldActor == null)
-            actorRepository.saveAndFlush(actor);
+        ResponseEntity<String> result = validateActor(actor);
+        HttpStatus HttpStatusCode = result.getStatusCode();
+
+        if (HttpStatusCode == HttpStatus.valueOf(400) || HttpStatusCode == HttpStatus.valueOf(409)){
+            /* 400 = Something wrong with actor fields
+             * 409 = Actor already exists
+             */
+            return result;
+        }
+
+        /* Add actor */
+        actorRepository.saveAndFlush(actor);
 
         /* Create user friendly version of actor */
-        UserActor actorCopy = getUserFriendlyInfo(actor);
+        ActorDto actorCopy = responseActor.getMapping(actor);
 
-        return actorCopy;
+        return result;
     }
 
     // DELETE ACTOR
     @RequestMapping(value = "{name}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable String name) {
+    public ResponseEntity<String> delete(@PathVariable String name) {
         Actor deletedActor;
 
         // Write PathVariable as it is, no quotes (in Postman)
         deletedActor = actorRepository.findByName(name);
         actorRepository.deleteById(deletedActor.getId());
+
+        return new ResponseEntity<>("Deleted actor: " + deletedActor.getName(), HttpStatus.OK);
     }
 
     // UPDATE ACTOR
-    @RequestMapping(value = "{name}", method = RequestMethod.PUT)
-    public UserActor update(@PathVariable String name, @RequestBody Actor actor) {
+    @RequestMapping(value = "{name}", method = RequestMethod.PATCH)
+    public ResponseEntity<String> update(@PathVariable String name, @RequestBody Actor actor) {
 
         Actor existingActor = actorRepository.findByName(name);
+        if(existingActor == null){
+            /* Actor exists */
+            return new ResponseEntity<>("Actor does not exist.", HttpStatus.valueOf(400));
+        }
+
+        ResponseEntity<String> result = validateActor(actor);
+        HttpStatus HttpStatusCode = result.getStatusCode();
+
+        if (HttpStatusCode == HttpStatus.valueOf(400)){
+            /* Something wrong with actor fields */
+            return result;
+        }
 
         /* Keep old id */
         BeanUtils.copyProperties(actor, existingActor, "id");
@@ -88,9 +115,6 @@ public class ActorsController {
         /* Save updated actor with old id */
         actorRepository.saveAndFlush(existingActor);
 
-        /* Create user friendly version of actor */
-        UserActor actorCopy = getUserFriendlyInfo(existingActor);
-
-        return actorCopy;
+        return new ResponseEntity<>("Updated actor: " + actor.getName(), HttpStatus.OK);
     }
 }

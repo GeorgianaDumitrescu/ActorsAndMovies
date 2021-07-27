@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class UserActor {
+public class ActorDto {
 
     private String name;
     private String gender;
     private List<String> movies;
 
-    public UserActor() {
+    public ActorDto() {
     }
 
     public String getName() {

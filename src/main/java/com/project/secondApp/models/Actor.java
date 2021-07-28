@@ -1,6 +1,5 @@
 package com.project.secondApp.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -17,8 +16,11 @@ public class Actor {
     private String gender;
 
 
-    @ManyToMany(mappedBy = "actors")
-    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "MoviesAndActors",
+            joinColumns = @JoinColumn(name = "actor_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id"))
     private List<Movie> movies;
 
     public Actor() {
@@ -28,6 +30,7 @@ public class Actor {
         return id;
     }
 
+    /* Possibly redundant (?)*/
     public void setId(Long id) {
         this.id = id;
     }

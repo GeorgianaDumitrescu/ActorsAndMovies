@@ -23,4 +23,14 @@ public class MovieMapping {
 
         return destinationMovie;
     }
+
+    public Movie getRawData(MovieDto sourceMovie) {
+        Movie movie = new Movie();
+        movie.setTitle(sourceMovie.getTitle());
+        movie.setRating(sourceMovie.getRating());
+        movie.setType(sourceMovie.getType());
+        movie.setActors(new ArrayList<>());
+
+        return movie;
+    }
 }

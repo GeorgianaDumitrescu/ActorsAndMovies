@@ -20,7 +20,7 @@ public class MoviesController {
     private MovieRepository movieRepository;
     @Autowired //TO DO
     private ActorRepository actorRepository;
-    MovieMapping responseMovie = new MovieMapping();
+    MovieMapping movieMapping = new MovieMapping();
 
     public ResponseEntity<String> validateMovie(Movie movie) {
         Movie oldMovie = movieRepository.findByTitle(movie.getTitle());
@@ -56,7 +56,7 @@ public class MoviesController {
         List<Movie> moviesList = movieRepository.findAll();
 
         for(Movie movie : moviesList) {
-            movies.add(responseMovie.getMapping(movie));
+            movies.add(movieMapping.getMapping(movie));
         }
 
         return new ResponseEntity<>(movies, HttpStatus.OK);
@@ -64,7 +64,16 @@ public class MoviesController {
 
     // ADD MOVIE
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody final Movie movie){
+    public ResponseEntity<String> create(@RequestBody final MovieDto newMovie){
+
+        Movie movie = movieMapping.getRawData(newMovie);
+
+        // TO DO : Move to MovieMapping (null import ??)
+        List<String> actors = newMovie.getActors();
+
+        for(String actor : actors) {
+            movie.getActors().add(actorRepository.findByName(actor));
+        }
 
         ResponseEntity<String> result = validateMovie(movie);
         HttpStatus HttpStatusCode = result.getStatusCode();
@@ -78,9 +87,6 @@ public class MoviesController {
 
         /* Add actor */
         movieRepository.saveAndFlush(movie);
-
-        /* Create user friendly version of actor */
-        MovieDto actorCopy = responseMovie.getMapping(movie);
 
         return result;
     }
@@ -100,7 +106,16 @@ public class MoviesController {
 
     // UPDATE MOVIE
     @RequestMapping(value = "{title}", method = RequestMethod.PATCH)
-    public ResponseEntity<String> update(@PathVariable String title, @RequestBody Movie movie) {
+    public ResponseEntity<String> update(@PathVariable String title, @RequestBody MovieDto updatedMovie) {
+
+        Movie movie = movieMapping.getRawData(updatedMovie);
+
+        // TO DO : Move to MovieMapping (null import ??)
+        List<String> actors = updatedMovie.getActors();
+
+        for(String actor : actors) {
+            movie.getActors().add(actorRepository.findByName(actor));
+        }
 
         Movie existingMovie = movieRepository.findByTitle(title);
         if(existingMovie == null){

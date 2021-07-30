@@ -1,9 +1,12 @@
-package com.project.secondApp.models;
+package com.project.secondApp.services;
 
+import com.project.secondApp.models.Actor;
+import com.project.secondApp.models.Movie;
+import com.project.secondApp.models.MovieDto;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MovieMapping {
+public class MovieService {
 
     public MovieDto getMapping(Movie sourceMovie) {
         MovieDto destinationMovie = new MovieDto();
@@ -32,5 +35,19 @@ public class MovieMapping {
         movie.setActors(new ArrayList<>());
 
         return movie;
+    }
+
+    public String buildResponse(MovieDto movie) {
+        String response = "Name: " + movie.getTitle() + '\n';
+        response += "Rating: " + movie.getRating() + '\n';
+        response += "Type: " + movie.getType() + '\n';
+        response += "Cast: " + '\n';
+        List<String> actors = movie.getActors();
+
+        for (String actor : actors) {
+            response += '\t' + actor + '\n';
+        }
+
+        return response;
     }
 }

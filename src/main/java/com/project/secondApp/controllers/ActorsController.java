@@ -1,10 +1,8 @@
 package com.project.secondApp.controllers;
 
-import com.project.secondApp.models.Actor;
-import com.project.secondApp.models.ActorDto;
-import com.project.secondApp.models.ActorMapping;
-import com.project.secondApp.models.Movie;
+import com.project.secondApp.models.*;
 import com.project.secondApp.repositories.*;
+import com.project.secondApp.services.ActorService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,12 +17,11 @@ public class ActorsController {
 
     @Autowired
     private ActorRepository actorRepository;
-    @Autowired // TO DO
+    @Autowired
     private MovieRepository movieRepository;
-    ActorMapping actorMapping = new ActorMapping();
+    ActorService actorService = new ActorService();
 
     public ResponseEntity<String> validateActor(Actor actor) {
-        Actor oldActor = actorRepository.findByName(actor.getName());
 
         if (actor.getName().matches(".*\\d.*")) {
             /* Actor name has incorrect format (no numbers allowed)*/
@@ -45,6 +42,7 @@ public class ActorsController {
             }
         }
 
+        Actor oldActor = actorRepository.findByName(actor.getName());
         if(oldActor != null){
             /* Actor exists */
             return new ResponseEntity<>("Actor already exists.", HttpStatus.valueOf(409));
@@ -56,24 +54,42 @@ public class ActorsController {
 
     // LIST ACTORS
     @GetMapping
-    public ResponseEntity<List<ActorDto>> list(){
-        List<ActorDto> actors = new ArrayList<>();
+    public ResponseEntity<List<ActorDto>> list() throws FailedDatabaseException {
+        /* Find actors */
         List<Actor> actorsList = actorRepository.findAll();
 
+        /* Map actors*/
+        List<ActorDto> actors = new ArrayList<>();
         for(Actor actor : actorsList) {
-            actors.add(actorMapping.getMapping(actor));
+            actors.add(actorService.getMapping(actor));
         }
 
         return new ResponseEntity<>(actors, HttpStatus.OK);
     }
 
+    // GET ACTOR
+    @GetMapping
+    @RequestMapping("{name}")
+    public ResponseEntity<String> getActor(@PathVariable String name) throws FailedDatabaseException {
+        Actor actor = actorRepository.findByName(name);
+
+        if (actor == null) {
+            return new ResponseEntity<>("Actor not found.", HttpStatus.valueOf(400));
+        }
+
+        ActorDto responseActor = actorService.getMapping(actor);
+        String response = actorService.buildResponse(responseActor);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     // ADD ACTOR
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody final ActorDto newActor){
+    public ResponseEntity<String> create(@RequestBody final ActorDto newActor) throws FailedDatabaseException {
 
-        Actor actor = actorMapping.getRawData(newActor);
+        Actor actor = actorService.getRawData(newActor);
 
-        // TO DO : Move to ActorMapping (null import ??)
+        // TO DO : Move to ActorService (null import ??)
         List<String> movies = newActor.getMovies();
 
         for(String movie : movies) {
@@ -99,7 +115,7 @@ public class ActorsController {
 
     // DELETE ACTOR
     @RequestMapping(value = "{name}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> delete(@PathVariable String name) {
+    public ResponseEntity<String> delete(@PathVariable String name) throws FailedDatabaseException  {
         Actor deletedActor;
 
         // Write PathVariable as it is, no quotes (in Postman)
@@ -111,11 +127,11 @@ public class ActorsController {
 
     // UPDATE ACTOR
     @RequestMapping(value = "{name}", method = RequestMethod.PATCH)
-    public ResponseEntity<String> update(@PathVariable String name, @RequestBody ActorDto updatedActor) {
+    public ResponseEntity<String> update(@PathVariable String name, @RequestBody ActorDto updatedActor)  throws FailedDatabaseException {
 
-        Actor actor = actorMapping.getRawData(updatedActor);
+        Actor actor = actorService.getRawData(updatedActor);
 
-        // TO DO : Move to ActorMapping (null import ??)
+        // TO DO : Move to ActorService (null import ??)
         List<String> movies = updatedActor.getMovies();
 
         for(String movie : movies) {
@@ -124,7 +140,7 @@ public class ActorsController {
 
         Actor existingActor = actorRepository.findByName(name);
         if(existingActor == null){
-            /* Actor exists */
+            /* Actor does not exist */
             return new ResponseEntity<>("Actor does not exist.", HttpStatus.valueOf(400));
         }
 

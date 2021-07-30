@@ -3,6 +3,7 @@ package com.project.secondApp.controllers;
 import com.project.secondApp.models.*;
 import com.project.secondApp.repositories.ActorRepository;
 import com.project.secondApp.repositories.MovieRepository;
+import com.project.secondApp.services.MovieService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,9 @@ public class MoviesController {
 
     @Autowired
     private MovieRepository movieRepository;
-    @Autowired //TO DO
+    @Autowired
     private ActorRepository actorRepository;
-    MovieMapping movieMapping = new MovieMapping();
+    MovieService movieService = new MovieService();
 
     public ResponseEntity<String> validateMovie(Movie movie) {
         Movie oldMovie = movieRepository.findByTitle(movie.getTitle());
@@ -50,25 +51,40 @@ public class MoviesController {
 
     // LIST MOVIES
     @GetMapping
-    public ResponseEntity<List<MovieDto>> list(){
+    public ResponseEntity<List<MovieDto>> list() throws FailedDatabaseException {
 
         List<MovieDto> movies = new ArrayList<MovieDto>();
         List<Movie> moviesList = movieRepository.findAll();
 
         for(Movie movie : moviesList) {
-            movies.add(movieMapping.getMapping(movie));
+            movies.add(movieService.getMapping(movie));
         }
 
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
+    // GET ACTOR
+    @GetMapping
+    @RequestMapping("{title}")
+    public ResponseEntity<String> getActor(@PathVariable String title) throws FailedDatabaseException {
+        Movie movie = movieRepository.findByTitle(title);
+
+        if (movie == null) {
+            return new ResponseEntity<>("Movie not found.", HttpStatus.valueOf(400));
+        }
+
+        MovieDto responseMovie = movieService.getMapping(movie);
+        String response = movieService.buildResponse(responseMovie);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     // ADD MOVIE
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody final MovieDto newMovie){
+    public ResponseEntity<String> create(@RequestBody final MovieDto newMovie) throws FailedDatabaseException {
 
-        Movie movie = movieMapping.getRawData(newMovie);
+        Movie movie = movieService.getRawData(newMovie);
 
-        // TO DO : Move to MovieMapping (null import ??)
+        // TO DO : Move to MovieService (null import ??)
         List<String> actors = newMovie.getActors();
 
         for(String actor : actors) {
@@ -93,7 +109,7 @@ public class MoviesController {
 
     // DELETE MOVIE
     @RequestMapping(value = "{title}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> delete(@PathVariable String title) {
+    public ResponseEntity<String> delete(@PathVariable String title) throws FailedDatabaseException {
 
         Movie deletedMovie;
 
@@ -106,11 +122,11 @@ public class MoviesController {
 
     // UPDATE MOVIE
     @RequestMapping(value = "{title}", method = RequestMethod.PATCH)
-    public ResponseEntity<String> update(@PathVariable String title, @RequestBody MovieDto updatedMovie) {
+    public ResponseEntity<String> update(@PathVariable String title, @RequestBody MovieDto updatedMovie)  throws FailedDatabaseException {
 
-        Movie movie = movieMapping.getRawData(updatedMovie);
+        Movie movie = movieService.getRawData(updatedMovie);
 
-        // TO DO : Move to MovieMapping (null import ??)
+        // TO DO : Move to MovieService (null import ??)
         List<String> actors = updatedMovie.getActors();
 
         for(String actor : actors) {

@@ -35,6 +35,10 @@ public class MovieDto {
         return type;
     }
 
+    public String getTypeString() {
+        return type.toString();
+    }
+
     public void setType(Type type) {
         this.type = type;
     }

@@ -1,14 +1,28 @@
 package com.project.secondApp.services;
 
-import com.project.secondApp.models.Actor;
-import com.project.secondApp.models.Movie;
-import com.project.secondApp.models.MovieDto;
+import com.project.secondApp.models.*;
+import com.project.secondApp.repositories.ActorRepository;
+import com.project.secondApp.repositories.MovieRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class MovieService {
 
-    public MovieDto getMapping(Movie sourceMovie) {
+    private ActorRepository actorRepository;
+    private MovieRepository movieRepository;
+
+    @Autowired
+    public MovieService(ActorRepository actorRepository, MovieRepository movieRepository) {
+        this.actorRepository = actorRepository;
+        this.movieRepository = movieRepository;
+    }
+
+    private MovieDto getMapping(Movie sourceMovie) {
         MovieDto destinationMovie = new MovieDto();
 
         destinationMovie.setTitle(sourceMovie.getTitle());
@@ -27,27 +41,134 @@ public class MovieService {
         return destinationMovie;
     }
 
-    public Movie getRawData(MovieDto sourceMovie) {
+    private Movie getRawData(MovieDto sourceMovie) {
         Movie movie = new Movie();
         movie.setTitle(sourceMovie.getTitle());
         movie.setRating(sourceMovie.getRating());
         movie.setType(sourceMovie.getType());
         movie.setActors(new ArrayList<>());
 
+        List<String> actors = sourceMovie.getActors();
+
+        for (String actor : actors) {
+            Actor newActor = actorRepository.findByName(actor);
+            if (newActor == null) {
+                /* Actor does not exist */
+                throw new ActorNotFoundException("");
+            }
+            movie.getActors().add(newActor);
+        }
+
         return movie;
     }
 
-    public String buildResponse(MovieDto movie) {
-        String response = "Name: " + movie.getTitle() + '\n';
-        response += "Rating: " + movie.getRating() + '\n';
-        response += "Type: " + movie.getType() + '\n';
-        response += "Cast: " + '\n';
-        List<String> actors = movie.getActors();
+    private void validateMovie(Movie movie) {
 
-        for (String actor : actors) {
-            response += '\t' + actor + '\n';
+        //TO DO : * Not working *
+        if (movie.getTypeString() !=  "action" &&
+                movie.getTypeString() !=  "comedy" &&
+                movie.getTypeString() !=  "horror") {
+            /* Wrong movie type */
+            throw new UnknownMovieTypeException("");
         }
 
-        return response;
+        if (movie.getRating() > 10) {
+            /* Rating exceeds limit */
+            throw new RatingExceedsLimitException("");
+        }
+
+        List<Actor> actors = movie.getActors();
+
+        for (Actor actor : actors) {
+            if ((movie == null) || (actorRepository.findByName(actor.getName()) == null)) {
+                /* Associated actor does not exist */
+                throw new ActorNotFoundException("");
+            }
+        }
+
+        /* Movie is valid */
+    }
+
+    // LIST MOVIES
+    public List<MovieDto> getMovies() {
+
+        List<MovieDto> movies = new ArrayList<MovieDto>();
+        List<Movie> moviesList = movieRepository.findAll();
+
+        for (Movie movie : moviesList) {
+            movies.add(getMapping(movie));
+        }
+
+        return movies;
+    }
+
+
+    // GET ACTOR
+    public MovieDto getMovie(@PathVariable String title) {
+        Movie movie = movieRepository.findByTitle(title);
+
+        if (movie == null) {
+            // Make new exception
+            throw new MovieNotFoundException("");
+        }
+
+        MovieDto responseMovie = getMapping(movie);
+        return responseMovie;
+    }
+
+    // ADD MOVIE
+    public MovieDto addNewMovie(final MovieDto newMovie) {
+
+        Movie movie = getRawData(newMovie);
+
+        Movie oldMovie = movieRepository.findByTitle(movie.getTitle());
+        if (oldMovie != null) {
+            /* Movie already exists */
+            throw new MovieAlreadyExistsException("");
+        }
+        // TO DO : Throw exception for wrong type (Problem : Cannot deserialize value of wrong type)
+        validateMovie(movie);
+
+        /* Add actor */
+        movieRepository.saveAndFlush(movie);
+        return newMovie;
+    }
+
+    // DELETE MOVIE
+    public MovieDto deleteMovie(String title){
+
+        Movie deletedMovie;
+
+        // Write PathVariable as it is, no quotes (in Postman)
+        deletedMovie = movieRepository.findByTitle(title);
+        if (deletedMovie == null) {
+            throw new MovieNotFoundException("");
+        }
+        MovieDto responseMovie = getMapping(deletedMovie);
+        movieRepository.deleteById(deletedMovie.getId());
+
+        return responseMovie;
+    }
+
+    // UPDATE MOVIE
+    public MovieDto updateMovie(String title, MovieDto updatedMovie){
+
+        Movie movie = getRawData(updatedMovie);
+        Movie existingMovie = movieRepository.findByTitle(title);
+        if(existingMovie == null){
+            /* Movie does not exist */
+            throw new MovieNotFoundException("");
+        }
+
+        // TO DO : Throw exception for wrong type (Problem : Cannot deserialize value of wrong type)
+        validateMovie(movie);
+
+        /* Keep old id */
+        BeanUtils.copyProperties(movie, existingMovie, "id");
+
+        /* Save updated movie with old id */
+        movieRepository.saveAndFlush(existingMovie);
+
+        return getMapping(existingMovie);
     }
 }

@@ -128,23 +128,22 @@ public class ActorService {
     }
 
     // DELETE ACTOR
-    public ActorDto deleteActor(String name) throws FailedDatabaseException  {
+    public ActorDto deleteActor(String name) {
         Actor deletedActor;
-        ActorDto deletedActorMapping;
 
         // Write PathVariable as it is, no quotes (in Postman)
         deletedActor = actorRepository.findByName(name);
         if (deletedActor == null) {
             throw new ActorNotFoundException("");
         }
-        deletedActorMapping = getMapping(deletedActor);
+        ActorDto deletedActorMapping = getMapping(deletedActor);
         actorRepository.deleteById(deletedActor.getId());
 
         return deletedActorMapping;
     }
 
     // UPDATE ACTOR
-    public ActorDto updateActor(String name, ActorDto updatedActor)  throws FailedDatabaseException {
+    public ActorDto updateActor(String name, ActorDto updatedActor) {
 
         Actor actor = getRawData(updatedActor);
         Actor existingActor = actorRepository.findByName(name);
@@ -161,6 +160,6 @@ public class ActorService {
         /* Save updated actor with old id */
         actorRepository.saveAndFlush(existingActor);
 
-        return updatedActor;
+        return getMapping(actor);
     }
 }

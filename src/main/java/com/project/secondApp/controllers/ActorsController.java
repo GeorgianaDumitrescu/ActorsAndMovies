@@ -34,7 +34,7 @@ public class ActorsController {
 
     // ADD ACTOR
     @PostMapping
-    public ResponseEntity<ActorDto> create(@RequestBody final ActorDto newActor) throws FailedDatabaseException {
+    public ResponseEntity<ActorDto> create(@RequestBody final ActorDto newActor) {
 
         actorService.addActor(newActor);
         return ResponseEntity.ok(newActor);
@@ -42,17 +42,17 @@ public class ActorsController {
 
     // DELETE ACTOR
     @RequestMapping(value = "{name}", method = RequestMethod.DELETE)
-    public ResponseEntity<ActorDto> delete(@PathVariable String name) throws FailedDatabaseException  {
+    public HttpStatus delete(@PathVariable String name) {
 
-        ActorDto deletedActor = actorService.deleteActor(name);
-        return ResponseEntity.ok(deletedActor);
+        actorService.deleteActor(name);
+        return HttpStatus.OK;
     }
 
     // UPDATE ACTOR
     @RequestMapping(value = "{name}", method = RequestMethod.PATCH)
-    public ResponseEntity.BodyBuilder update(@PathVariable String name, @RequestBody ActorDto updatedActor)  throws FailedDatabaseException {
+    public ResponseEntity<ActorDto> update(@PathVariable String name, @RequestBody ActorDto updatedActor) {
 
         ActorDto actor = actorService.updateActor(name, updatedActor);
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(actor);
     }
 }

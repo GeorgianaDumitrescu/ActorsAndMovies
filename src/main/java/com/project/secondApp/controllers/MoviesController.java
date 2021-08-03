@@ -42,10 +42,11 @@ public class MoviesController {
 
     // DELETE MOVIE
     @RequestMapping(value = "{title}", method = RequestMethod.DELETE)
-    public ResponseEntity<MovieDto> delete(@PathVariable String title) {
+    public HttpStatus delete(@PathVariable String title) {
 
+        /* Keeping non void return for future uses */
         MovieDto deletedMovie = movieService.deleteMovie(title);
-        return ResponseEntity.ok(deletedMovie);
+        return HttpStatus.OK;
     }
 
     // UPDATE MOVIE

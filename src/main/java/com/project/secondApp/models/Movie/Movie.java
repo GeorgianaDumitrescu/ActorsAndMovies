@@ -1,6 +1,7 @@
-package com.project.secondApp.models;
+package com.project.secondApp.models.Movie;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.project.secondApp.models.Actor.Actor;
 
 import javax.persistence.*;
 import java.util.List;

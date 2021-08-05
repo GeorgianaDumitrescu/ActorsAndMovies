@@ -1,4 +1,4 @@
-package com.project.secondApp.models;
+package com.project.secondApp.models.Actor;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;

@@ -1,12 +1,17 @@
 package com.project.secondApp.services;
 
-import com.project.secondApp.models.*;
+import com.project.secondApp.exceptions.ActorExceptions.ActorNotFoundException;
+import com.project.secondApp.exceptions.MovieExceptions.MovieAlreadyExistsException;
+import com.project.secondApp.exceptions.MovieExceptions.MovieNotFoundException;
+import com.project.secondApp.exceptions.MovieExceptions.RatingExceedsLimitException;
+import com.project.secondApp.models.Actor.Actor;
+import com.project.secondApp.models.Movie.Movie;
+import com.project.secondApp.models.Movie.MovieDto;
 import com.project.secondApp.repositories.ActorRepository;
 import com.project.secondApp.repositories.MovieRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +36,14 @@ public class MovieService {
         destinationMovie.setActors(new ArrayList<>());
 
         /* Raw */
-        List<Actor> actors = sourceMovie.getActors();
-
-        /* Raw -> User friendly */
-        for (Actor currentActor : actors) {
-            destinationMovie.getActors().add(currentActor.getName());
+        if (sourceMovie.getActors() != null) {
+            List<Actor> actors = sourceMovie.getActors();
+            /* Raw -> User friendly */
+            for (Actor currentActor : actors) {
+                if (currentActor != null) {
+                    destinationMovie.getActors().add(currentActor.getName());
+                }
+            }
         }
 
         return destinationMovie;
@@ -64,14 +72,6 @@ public class MovieService {
 
     private void validateMovie(Movie movie) {
 
-        //TO DO : * Not working *
-        if (movie.getTypeString() !=  "action" &&
-                movie.getTypeString() !=  "comedy" &&
-                movie.getTypeString() !=  "horror") {
-            /* Wrong movie type */
-            throw new UnknownMovieTypeException("");
-        }
-
         if (movie.getRating() > 10) {
             /* Rating exceeds limit */
             throw new RatingExceedsLimitException("");
@@ -80,7 +80,7 @@ public class MovieService {
         List<Actor> actors = movie.getActors();
 
         for (Actor actor : actors) {
-            if ((movie == null) || (actorRepository.findByName(actor.getName()) == null)) {
+            if (actorRepository.findByName(actor.getName()) == null) {
                 /* Associated actor does not exist */
                 throw new ActorNotFoundException("");
             }
@@ -104,11 +104,11 @@ public class MovieService {
 
 
     // GET ACTOR
-    public MovieDto getMovie(@PathVariable String title) {
+    public MovieDto getMovie(String title) {
         Movie movie = movieRepository.findByTitle(title);
 
         if (movie == null) {
-            // Make new exception
+            /* Did not find requested movie */
             throw new MovieNotFoundException("");
         }
 
@@ -126,7 +126,7 @@ public class MovieService {
             /* Movie already exists */
             throw new MovieAlreadyExistsException("");
         }
-        // TO DO : Throw exception for wrong type (Problem : Cannot deserialize value of wrong type)
+
         validateMovie(movie);
 
         /* Add actor */
@@ -160,7 +160,6 @@ public class MovieService {
             throw new MovieNotFoundException("");
         }
 
-        // TO DO : Throw exception for wrong type (Problem : Cannot deserialize value of wrong type)
         validateMovie(movie);
 
         /* Keep old id */

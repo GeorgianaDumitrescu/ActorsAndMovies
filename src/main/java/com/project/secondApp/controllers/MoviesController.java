@@ -1,6 +1,7 @@
 package com.project.secondApp.controllers;
 
-import com.project.secondApp.models.*;
+import com.project.secondApp.exceptions.FailedDatabaseException;
+import com.project.secondApp.models.Movie.MovieDto;
 import com.project.secondApp.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

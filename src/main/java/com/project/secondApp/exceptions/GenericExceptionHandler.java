@@ -1,5 +1,13 @@
-package com.project.secondApp.models;
+package com.project.secondApp.exceptions;
 
+import com.project.secondApp.exceptions.ActorExceptions.ActorAlreadyExistsException;
+import com.project.secondApp.exceptions.ActorExceptions.ActorNotFoundException;
+import com.project.secondApp.exceptions.ActorExceptions.IncorrectGenderFormatException;
+import com.project.secondApp.exceptions.ActorExceptions.IncorrectNameFormatException;
+import com.project.secondApp.exceptions.MovieExceptions.MovieAlreadyExistsException;
+import com.project.secondApp.exceptions.MovieExceptions.MovieNotFoundException;
+import com.project.secondApp.exceptions.MovieExceptions.RatingExceedsLimitException;
+import com.project.secondApp.exceptions.MovieExceptions.UnknownMovieTypeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

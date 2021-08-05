@@ -1,6 +1,6 @@
 package com.project.secondApp.controllers;
 
-import com.project.secondApp.models.*;
+import com.project.secondApp.models.Actor.ActorDto;
 import com.project.secondApp.services.ActorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

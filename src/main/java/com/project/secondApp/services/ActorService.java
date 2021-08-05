@@ -1,6 +1,13 @@
 package com.project.secondApp.services;
 
-import com.project.secondApp.models.*;
+import com.project.secondApp.exceptions.ActorExceptions.ActorAlreadyExistsException;
+import com.project.secondApp.exceptions.ActorExceptions.ActorNotFoundException;
+import com.project.secondApp.exceptions.ActorExceptions.IncorrectGenderFormatException;
+import com.project.secondApp.exceptions.ActorExceptions.IncorrectNameFormatException;
+import com.project.secondApp.exceptions.MovieExceptions.MovieNotFoundException;
+import com.project.secondApp.models.Actor.Actor;
+import com.project.secondApp.models.Actor.ActorDto;
+import com.project.secondApp.models.Movie.Movie;
 import com.project.secondApp.repositories.ActorRepository;
 import com.project.secondApp.repositories.MovieRepository;
 import org.springframework.beans.BeanUtils;

@@ -6,12 +6,6 @@ import com.project.secondApp.models.Actor.Actor;
 import javax.persistence.*;
 import java.util.List;
 
-enum Type {
-    horror,
-    comedy,
-    action
-}
-
 @Entity(name = "movies")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Movie {

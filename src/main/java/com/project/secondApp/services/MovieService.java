@@ -62,7 +62,7 @@ public class MovieService {
             Actor newActor = actorRepository.findByName(actor);
             if (newActor == null) {
                 /* Actor does not exist */
-                throw new ActorNotFoundException("");
+                throw new ActorNotFoundException("Associated actor does not exist.");
             }
             movie.getActors().add(newActor);
         }
@@ -74,7 +74,7 @@ public class MovieService {
 
         if (movie.getRating() > 10) {
             /* Rating exceeds limit */
-            throw new RatingExceedsLimitException("");
+            throw new RatingExceedsLimitException("Movie rating exceeds limit (limit = 10).");
         }
 
         List<Actor> actors = movie.getActors();
@@ -82,7 +82,7 @@ public class MovieService {
         for (Actor actor : actors) {
             if (actorRepository.findByName(actor.getName()) == null) {
                 /* Associated actor does not exist */
-                throw new ActorNotFoundException("");
+                throw new ActorNotFoundException("Associated actor does not exist.");
             }
         }
 
@@ -109,7 +109,7 @@ public class MovieService {
 
         if (movie == null) {
             /* Did not find requested movie */
-            throw new MovieNotFoundException("");
+            throw new MovieNotFoundException("Associated movie does not exist.");
         }
 
         MovieDto responseMovie = getMapping(movie);
@@ -124,7 +124,7 @@ public class MovieService {
         Movie oldMovie = movieRepository.findByTitle(movie.getTitle());
         if (oldMovie != null) {
             /* Movie already exists */
-            throw new MovieAlreadyExistsException("");
+            throw new MovieAlreadyExistsException("Movie " +  oldMovie.getTitle() + " already exists.");
         }
 
         validateMovie(movie);
@@ -142,7 +142,7 @@ public class MovieService {
         // Write PathVariable as it is, no quotes (in Postman)
         deletedMovie = movieRepository.findByTitle(title);
         if (deletedMovie == null) {
-            throw new MovieNotFoundException("");
+            throw new MovieNotFoundException("Associated movie does not exist.");
         }
         MovieDto responseMovie = getMapping(deletedMovie);
         movieRepository.deleteById(deletedMovie.getId());
@@ -157,7 +157,7 @@ public class MovieService {
         Movie existingMovie = movieRepository.findByTitle(title);
         if(existingMovie == null){
             /* Movie does not exist */
-            throw new MovieNotFoundException("");
+            throw new MovieNotFoundException("Associated movie does not exist.");
         }
 
         validateMovie(movie);

@@ -1,0 +1,167 @@
+swagger: "2.0"
+info:
+  description: "This is a sample server Petstore server.  You can find out more about     Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/)."
+  version: "1.0.0"
+  title: "Swagger Cinema"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost"
+basePath: "/localhost:8080/api/v2"
+tags:
+- name: "movies"
+  description: "Everything about your Movies"
+schemes:
+- "https"
+- "http"
+paths:
+  /movies:
+    get:
+      tags:
+      - "movies"
+      summary: "Finds all movies in database"
+      description: "List all movies"
+      operationId: "findAllMovies"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Movie"
+        "423":
+          description: "Database failed."
+    post:
+      tags:
+      - "movies"
+      summary: "Add a new movie to the list"
+      description: ""
+      operationId: "addMovie"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Movie object that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/Movie"
+      responses:
+        "200": 
+          description: "Movie added successfully."
+          schema:
+            $ref: "#/definitions/Movie"
+        "400":
+          description: "Movie already exists."
+        "423":
+          description: "Database failed."
+    patch:
+      tags:
+      - "movies"
+      summary: "Update an existing movie"
+      description: ""
+      operationId: "updateMovie"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Movie object that needs to be updated in the list"
+        required: true
+        schema:
+          $ref: "#/definitions/Movie"
+      responses:
+        "200": 
+          description: "Movie updated successfully."
+          schema:
+            $ref: "#/definitions/Movie"
+        "403":
+          description: "Associated actor does not exist."
+        "404":
+          description: "Associated movie does not exist."
+        "405":
+          description: "Movie rating exceeds limit (limit = 10)."
+        "423":
+          description: "Database failed."
+  /movies/{movieTitle}:
+    get:
+      tags:
+      - "movies"
+      summary: "Finds movie by title"
+      description: "Only one title can be provided (no quotes allowed in movie name)"
+      operationId: "findMovieByTitle"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "movieTitle"
+        in: "path"
+        description: "Title to filter by"
+        required: true
+        type: "array"
+        items:
+          type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            items:
+              $ref: "#/definitions/Movie"
+        "404":
+          description: "Associated movie does not exist."
+        "423":
+          description: "Database failed."
+    delete:
+      tags:
+      - "movies"
+      summary: "Deletes a movie"
+      description: ""
+      operationId: "deleteMovie"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "movieTitle"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "OK (Movie deleted successfully)."
+        "404":
+          description: "Associated movie does not exist."
+        "423":
+          description: "Database failed."
+definitions:
+  Movie:
+    type: "object"
+    required:
+    - "title"
+    - "rating"
+    - "type"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      title:
+        type: "string"
+      rating:
+        type: "number"
+        format: "double"
+      type:
+        type: "string"
+        enum:
+        - "horror"
+        - "comedy"
+        - "action"
+    xml:
+      name: "Movie"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
